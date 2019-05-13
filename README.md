@@ -1,5 +1,15 @@
 # hit-student-breast-detection-system
 
+# The interface
+* Login
+* Register new patients
+ * patient submits pics 
+ * reject invalid image
+* Generate results
+ * Benign not cancerous
+ * Malignant Cancerous
+* Produce reports
+
 Ten real-valued features are computed for each cell nucleus:
 
     radius (mean of distances from center to points on the perimeter)
