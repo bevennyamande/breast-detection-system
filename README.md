@@ -10,6 +10,10 @@
 - python3.7 run.py or python3.7 run.py createdb (if database.db deleted)
 - The app uses a pretrained model. The model if deleted then start by running "python train.py"
 
+# password
+* username: "doc@doc.com"
+* password: "doctor"
+
 # Objectives
 * The app should have the following :
     * New patients should be able to create an account

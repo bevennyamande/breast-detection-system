@@ -12,6 +12,7 @@ from flask_bcrypt import Bcrypt
 from keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import load_model
+import numpy as np
 
 
 app = Flask(__name__)
@@ -46,6 +47,7 @@ class User(db.Model):
     email = db.Column('email',db.String(50),unique=True , index=True)
     role = db.Column('role',db.String(50), default='patient')
     status = db.Column('status',db.String(50), default='')
+    prognosis = db.Column('prognosis',db.String(50), default='')
     date_joined = db.Column('date_joined' , db.DateTime)
  
     def __init__(self , name ,password , email, age, dob):
@@ -117,9 +119,9 @@ def process_image_and_predict(image_path):
     result = classifier.predict(input_image)
     training_set.class_indices
     if result[0][0] == 1:
-        prediction = 'Malignant'
+        prediction = 'malignant'
     else:
-        prediction = 'Benign'
+        prediction = 'benign'
     return prediction
 
 ############################# ROUTES ###################################
@@ -141,7 +143,7 @@ def index():
 	if patient and bcrypt.check_password_hash(patient.password, pwd):
 		session['logged_in'] = True
 		login_user(patient)
-		return redirect(url_for('patient'))
+		return redirect(url_for('dashboard'))
 	flash("Wrong login credentials")
 	return render_template('index.html')
 
@@ -158,14 +160,23 @@ def create_account():
 	db.session.add(new_patient)
 	db.session.commit()
 	flash('Account created successfully')
-
 	return redirect(url_for('index'))
 
 
-@app.route('/patient')
+@app.route('/dashboard')
 @login_required
-def patient():
-	return render_template('dashboard.html')
+def dashboard():
+	patients = db.session.query(User).filter_by(role='patient').all()
+	info = {
+	        'total_patients': db.session.query(User).filter_by(role='patient').count(),
+	        'total_benign': db.session.query(User).filter_by(role='patient', status='benign').count(),
+	        'total_malignant': db.session.query(User).filter_by(role='patient', status='malignant').count(),
+	        'malignant_under_30': db.session.query(User).filter_by(role='patient').filter(User.age<30).count(),
+	        'benign_under_30': db.session.query(User).filter_by(role='patient').filter(User.age<30).count(),
+	        'malignant_over_30': db.session.query(User).filter_by(role='patient').filter(User.age>30).count(),
+	        'benign_over_30': db.session.query(User).filter_by(role='patient').filter(User.age>30).count(),
+	}
+	return render_template('dashboard.html', info=info, patients=patients)
 
 
 @app.route('/predict', methods=['POST'])
@@ -180,9 +191,19 @@ def predict():
 		patient.status = results
 		db.session.commit()
 		flash('Image sent successfully. The doctor will notify you of your results.')
-		return redirect(url_for('patient'))
+		return redirect(url_for('dashboard'))
 	flash('Invalid file! Please sent images only')
-	return redirect(url_for('patient'))
+	return redirect(url_for('dashboard'))
+
+
+@app.route('/prognosis/<uid>', methods=['POST'])
+def prognosis(uid):
+	prognosis = request.form['prognosis']
+	patient = db.session.query(User).filter_by(id=uid).first()
+	patient.prognosis = prognosis
+	db.session.commit()
+	flash('Recommendation posted successfully')
+	return redirect(url_for('dashboard'))
 
 
 @app.route('/logout')
