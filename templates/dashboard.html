@@ -1,0 +1,108 @@
+{% extends '_base.html' %}
+{% block navform %}
+<ul class="nav navbar-nav">
+    <li><a href="#">Hi, {{ current_user.name }}</a></li>
+    <li style="text-transform: uppercase;"><a href="{{ url_for('logout') }}">Logout</a></li>
+</ul>
+{% endblock navform %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+            <div class="jumbotron jumbotron-fluid" style="height: 277px;background-image: url('../static/img/happy-girl.jpeg'); background-position: center;">
+                <h3 class="display-3" style="color: seashell;">Upload image for screening</h3>
+                <form action="{{ url_for('predict') }}" method="POST" class="form-inline" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <input type="file" id="" required="required" name="file">
+                    </div>
+                    <button type="submit" class="btn btn-danger">send image </button>
+                </form>
+            </div>
+        </div>
+            <div class="col-lg-4">
+        {% if current_user.role == "doctor" %}
+        <div class="panel panel-danger">
+            <div class="panel-heading">
+                <h3 class="panel-title">Statistical Reports</h3> 
+            </div>
+            <div class="panel-body">
+                <table class="table table-condensed table-responsive table-striped">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Registered Users</td>
+                            <td>20</td>
+                        </tr>
+                        <tr>
+                            <td>Total Bening patients</td>
+                            <td>20</td>
+                        </tr>
+                         <tr>
+                            <td>Total Malignant patients</td>
+                            <td>20</td>
+                        </tr>
+                        <tr>
+                            <td>This month patients</td>
+                            <td>10</td>
+                        </tr>
+                        <tr>
+                            <td>Most affected age group</td>
+                            <td>34</td>
+                        </tr>
+                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+          <div class="panel panel-danger" style="height: 277px;">
+            <div class="panel-heading">
+                <h3 class="panel-title">Medical Record: {{ current_user.name | capitalize }}</h3> 
+            </div>
+            <div class="panel-body">
+                <table class="table table-condensed table-responsive table-striped small">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Name</td>
+                            <td>{{ current_user.name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Email</td>
+                            <td>{{ current_user.email }}</td>
+                        </tr>
+                         <tr>
+                            <td>Dob</td>
+                            <td>{{ current_user.dob }}</td>
+                        </tr>
+                        <tr>
+                            <td>Age</td>
+                            <td>{{ current_user.age }}</td>
+                        </tr>
+                     <tr>
+                            <td>Dignosis</td>
+                            <td>{% if current_user.status %} {{ current_user.status }} {% else %} Not yet {% endif %}</td>
+                        </tr>
+                         <tr>
+                            <td>Prognosis</td>
+                            <td>TODO: advice on how to control condition etc</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+  
+</div>
+    </div>
+
+{% endblock content %}

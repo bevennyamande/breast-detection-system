@@ -1,32 +1,34 @@
-# hit-student-breast-detection-system
+# breast-detection/classification-system
 
-# The interface
-* Login
-* Register new patients
- * patient submits pics 
- * reject invalid image
-* Generate results
- * Benign not cancerous
- * Malignant Cancerous
+# Installation
+* cd into folder
+* sudo pip3 install pipenv
+* pipenv shell
+* pipenv install
+
+- After Installation run the following commands
+- python3.7 run.py or python3.7 run.py createdb (if database.db deleted)
+- The app uses a pretrained model. The model if deleted then start by running "python train.py"
+
+# Objectives
+* The app should have the following :
+    * New patients should be able to create an account
+    *  They should be able to login into their account
+    *  Patients must submit a scan of type image for classification and diagnosis
+    *  The system should only accept images. NB: We assume the patients knows the purpose of the system hence no way no validate the images for now
+* The app should be able to generate results viz
+    * Benign (Not cancerous) 
+    * Malignant (Cancerous)
 * Produce reports
 
-Ten real-valued features are computed for each cell nucleus:
+# Tools and Frameworks Used
+* Python 3.7 programming language
+* Flask python web framework
+* Scikit-Learn (Python ML library)
+* Keras (ML and Deep learning python library)
 
-    radius (mean of distances from center to points on the perimeter)
-    texture (standard deviation of gray-scale values)
-    perimeter
-    area
-    smoothness (local variation in radius lengths)
-    compactness (perimeter² / area — 1.0)
-    concavity (severity of concave portions of the contour)
-    concave points (number of concave portions of the contour)
-    symmetry
-    fractal dimension (“coastline approximation” — 1)
-
-
-
-
-Some Risk Factors for Breast Cancer
+# TODO 
+## Create a model to test the following facts
 
 The following are some of the known risk factors for breast cancer. However, most cases of breast cancer cannot be linked to a specific cause. Talk to your doctor about your specific risk.
 
@@ -43,3 +45,9 @@ Childbearing and menstrual history. The older a woman is when she has her first 
     Women who menstruate for the first time at an early age (before 12)
     Women who go through menopause late (after age 55)
     Women who’ve never had children
+
+# Datasets
+* https://data.mendeley.com/datasets/wmy84gzngw/1/files/fa206ab0-b2af-453a-b8d0-1e6e89230377
+
+# References
+* https://becominghuman.ai/building-an-image-classifier-using-deep-learning-in-python-totally-from-a-beginners-perspective-be8dbaf22dd8

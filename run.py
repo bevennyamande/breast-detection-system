@@ -1,4 +1,6 @@
 import datetime, sys, os
+from datetime import date
+from dateutil.relativedelta import *
 from werkzeug.utils import secure_filename
 from flask import (Flask, render_template, url_for,
 	               redirect, request, session, flash, g)
@@ -6,6 +8,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import (LoginManager, login_user, logout_user,
 	                     current_user, login_required)
 from flask_bcrypt import Bcrypt
+
+from keras.preprocessing import image
+from keras.preprocessing.image import ImageDataGenerator
+from keras.models import load_model
 
 
 app = Flask(__name__)
@@ -26,7 +32,7 @@ bcrypt = Bcrypt(app)
 login_manager.login_view = '/'
 
 # You can change this to any folder on your system
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}
 
 ############################# MODELS ###################################
 
@@ -39,7 +45,7 @@ class User(db.Model):
     dob = db.Column('dob' , db.String(10))
     email = db.Column('email',db.String(50),unique=True , index=True)
     role = db.Column('role',db.String(50), default='patient')
-    status = db.Column('status',db.String(50), default='benign')
+    status = db.Column('status',db.String(50), default='')
     date_joined = db.Column('date_joined' , db.DateTime)
  
     def __init__(self , name ,password , email, age, dob):
@@ -78,11 +84,43 @@ def load_user(id):
     return User.query.get(int(id))
 
 
-def calculate_age(dob):
-	"""Calculate the age given the date of birth """
-	return dob
+def calculate_age(dob: str):
+	"""Calculate the age given the date of birth dd-mm-yyyy"""
+	today = date.today()
+	year, month, day = map(int, dob.split('-'))
+	age = relativedelta(today, date(year, month, day))
+	return age.years
 
 
+train_datagen = ImageDataGenerator(rescale = 1./255,
+                                   shear_range = 0.2,
+                                   zoom_range = 0.2,
+                                   horizontal_flip = True)
+
+test_datagen = ImageDataGenerator(rescale = 1./255)
+
+training_set = train_datagen.flow_from_directory('dataset/training_set',
+                                                 target_size = (64, 64),
+                                                 batch_size = 32,
+                                                 class_mode = 'binary')
+
+test_set = test_datagen.flow_from_directory('dataset/test_set',
+                                            target_size = (64, 64),
+                                            batch_size = 32,
+                                            class_mode = 'binary')
+
+def process_image_and_predict(image_path):
+    classifier = load_model('Breast_cancer_predict_model.h5')
+    input_image = image.load_img(image_path, target_size = (64, 64))
+    input_image = image.img_to_array(input_image)
+    input_image = np.expand_dims(input_image, axis = 0)
+    result = classifier.predict(input_image)
+    training_set.class_indices
+    if result[0][0] == 1:
+        prediction = 'Malignant'
+    else:
+        prediction = 'Benign'
+    return prediction
 
 ############################# ROUTES ###################################
 
@@ -127,7 +165,7 @@ def create_account():
 @app.route('/patient')
 @login_required
 def patient():
-	return render_template('patient.html')
+	return render_template('dashboard.html')
 
 
 @app.route('/predict', methods=['POST'])
@@ -135,15 +173,12 @@ def patient():
 def predict():
 	file = request.files['file']
 	if allowed_file(file.filename):
-		# check if the file is a breast image pic if else flash invalid file
-		# benign not cancerous
-		# malignant cancerous
-
-		# if os.path.exists(app.config['TEMP_DIR']):
-		# 	os.rmdir(app.config['TEMP_DIR'])
 		os.makedirs(app.config['TEMP_DIR'], exist_ok=True)
-		# import pil and name the images and save them
 		file.save(os.path.join(app.config['TEMP_DIR'],secure_filename(file.filename)))
+		results = process_image_and_predict(os.path.join(app.config['TEMP_DIR'],secure_filename(file.filename)))
+		patient = db.session.query(User).filter_by(id=current_user.id).first()
+		patient.status = results
+		db.session.commit()
 		flash('Image sent successfully. The doctor will notify you of your results.')
 		return redirect(url_for('patient'))
 	flash('Invalid file! Please sent images only')
