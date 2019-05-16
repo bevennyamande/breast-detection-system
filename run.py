@@ -3,10 +3,10 @@ from datetime import date
 from dateutil.relativedelta import *
 from werkzeug.utils import secure_filename
 from flask import (Flask, render_template, url_for,
-	               redirect, request, session, flash, g)
+                   redirect, request, session, flash, g)
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (LoginManager, login_user, logout_user,
-	                     current_user, login_required)
+                         current_user, login_required)
 from flask_bcrypt import Bcrypt
 
 from keras.preprocessing import image
@@ -49,7 +49,8 @@ class User(db.Model):
     status = db.Column('status',db.String(50), default='')
     prognosis = db.Column('prognosis',db.String(50), default='')
     date_joined = db.Column('date_joined' , db.DateTime)
- 
+
+
     def __init__(self , name ,password , email, age, dob):
         self.name = name
         self.password = password
@@ -57,19 +58,20 @@ class User(db.Model):
         self.age = age
         self.dob = dob
         self.date_joined = datetime.datetime.utcnow()
- 
+
+
     def is_authenticated(self):
         return True
- 
+
     def is_active(self):
         return True
- 
+
     def is_anonymous(self):
         return False
- 
+
     def get_id(self):
         return self.id
- 
+
     def __repr__(self):
         return f'User {self.name}'
 
@@ -171,10 +173,10 @@ def dashboard():
 	        'total_patients': db.session.query(User).filter_by(role='patient').count(),
 	        'total_benign': db.session.query(User).filter_by(role='patient', status='benign').count(),
 	        'total_malignant': db.session.query(User).filter_by(role='patient', status='malignant').count(),
-	        'malignant_under_30': db.session.query(User).filter_by(role='patient').filter(User.age<30).count(),
-	        'benign_under_30': db.session.query(User).filter_by(role='patient').filter(User.age<30).count(),
-	        'malignant_over_30': db.session.query(User).filter_by(role='patient').filter(User.age>30).count(),
-	        'benign_over_30': db.session.query(User).filter_by(role='patient').filter(User.age>30).count(),
+	        'malignant_under_30': db.session.query(User).filter_by(role='patient', status='malignant').filter(User.age<30).count(),
+	        'benign_under_30': db.session.query(User).filter_by(role='patient', status='benign').filter(User.age<30).count(),
+	        'malignant_over_30': db.session.query(User).filter_by(role='patient', status='malignant').filter(User.age>30).count(),
+	        'benign_over_30': db.session.query(User).filter_by(role='patient', status='benign').filter(User.age>30).count(),
 	}
 	return render_template('dashboard.html', info=info, patients=patients)
 
